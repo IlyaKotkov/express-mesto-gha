@@ -5,19 +5,20 @@ module.exports.createCard = (req, res) => {
   const owner = req.user._id
   Card.create({ name, link, owner  })
   .then(cards => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.getCard = (req, res) => {
   Card.find({})
+    .populate(['owner', 'likes'])
     .then(cards => res.send({ data: cards }))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.deleteCardById = (req, res) => {
-  Card.findById(req.params)
+  Card.findById(req.params._id)
     .then(cards => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => res.status(500).send({ message: err }));
 };
 
 module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(

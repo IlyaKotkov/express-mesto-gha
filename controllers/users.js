@@ -1,5 +1,12 @@
 const User = require('../models/user')
 
+const updateUser = (req, res) => {
+  const { name, about } = req.body;
+  User.findByIdAndUpdate(req.user._id, {name, about})
+  .then((user) => res.send({data: user}))
+  .catch((err) => console.log(err))
+}
+
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then(users => res.send({ data: users }))
@@ -7,9 +14,9 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUsersById = (req, res) => {
-  User.findById(req.params)
+  User.findById(req.user._id)
     .then(users => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => res.status(500).send({ message: 'Произошла ошибка', err }));
 };
 
 module.exports.createUser = (req, res) => {
