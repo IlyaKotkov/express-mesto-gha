@@ -25,13 +25,22 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUsersById = (req, res) => {
   User.findById(req.params.userId)
+  .orFail(() => {
+    const newError = new Error()
+    newError.name = "DocumentNotFoundError"
+    throw newError
+  })
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === "CastError") {
+      if (err.name === "DocumentNotFoundError") {
         res.status(404).send({message: "Пользователь по указанному _id не найден."})
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' })
       }
+
+      if (err.name === "CastError") {
+        res.status(400).send({message: "Передан некорректный _id."})
+      }
+        return res.status(500).send({ message: 'Произошла ошибка' })
+
     } );
 };
 
