@@ -11,6 +11,9 @@ const updateUser = (req, res) => {
       if (err.name === "CastError") {
         res.status(NOT_FOUND_ERROR).send({message: "Пользователь по указанному _id не найден."})
       }
+      else {
+        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' })
+      }
       if (err.name === "ValidationError") {
         res.status(BAD_REQUES_ERROR).send({message: "Переданы некорректные данные при обновлении профиля."})
       }
@@ -38,11 +41,15 @@ module.exports.getUsersById = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         res.status(NOT_FOUND_ERROR).send({message: "Пользователь по указанному _id не найден."})
       }
-
+      else {
+        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' })
+      }
       if (err.name === "CastError") {
         res.status(BAD_REQUES_ERROR).send({message: "Передан некорректный _id."})
       }
-        return res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' })
+      else {
+        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' })
+      }
 
     } );
 };

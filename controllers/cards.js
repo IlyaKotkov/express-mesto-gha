@@ -38,11 +38,15 @@ module.exports.deleteCardById = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         res.status(NOT_FOUND_ERROR).send({message: "карточка по указанному _id не найдена."})
       }
-
+      else {
+        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' })
+      }
       if (err.name === "CastError") {
         res.status(BAD_REQUES_ERROR).send({message: "Передан некорректный _id."})
       }
-        return res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' })
+      else {
+        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' })
+      }
 
     } );
 };
@@ -77,7 +81,7 @@ module.exports.dislikeCard = (req, res) =>
     if (!card) {
       res.status(NOT_FOUND_ERROR).send({ message: "Карточка с указанным _id не найдена." })
     }
-    return res.status(STATUS_OK).send({ data: card });
+      return res.status(200).send({ data: card });
   })
   .catch((err) => {
     if (err.name === "CastError") {
