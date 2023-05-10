@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const users = require('./routes/users.js')
 const cards = require('./routes/cards.js')
 const bodyParser = require('body-parser');
+const routerError = require('./routes/router.js')
 
 const app = express();
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
@@ -18,5 +19,6 @@ app.use((req, res, next) => {
 })
 app.use(users)
 app.use(cards)
+app.use(routerError)
 
 app.listen(3000);
