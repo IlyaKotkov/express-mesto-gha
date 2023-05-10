@@ -1,4 +1,12 @@
 {
-    "extends": "airbnb-base",
-    "allow": { "allow": "_id" }
+  "env": {
+    "browser": false,
+    "node": true
+  },
+  "extends": [
+      "airbnb-base"
+  ],
+  "rules": {
+    "no-underscore-dangle": ["error", {"allow": ["_id"]}]
+  }
 }
