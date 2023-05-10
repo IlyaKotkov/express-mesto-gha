@@ -1,4 +1,7 @@
 const User = require('../models/user')
+const NOT_FOUND_ERROR = 404
+const BAD_REQUES_ERROR = 400
+const DEFAULT_ERROR = 500
 
 const updateUser = (req, res) => {
   const { name, about, avatar } = req.body;
@@ -6,13 +9,13 @@ const updateUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(404).send({message: "Пользователь по указанному _id не найден."})
+        res.status(NOT_FOUND_ERROR).send({message: "Пользователь по указанному _id не найден."})
       }
       if (err.name === "ValidationError") {
-        res.status(400).send({message: "Переданы некорректные данные при обновлении профиля."})
+        res.status(BAD_REQUES_ERROR).send({message: "Переданы некорректные данные при обновлении профиля."})
       }
        else {
-        res.status(500).send({ message: 'Произошла ошибка' })
+        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' })
       }
     })
 }
@@ -20,7 +23,7 @@ const updateUser = (req, res) => {
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then(users => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(() => res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.getUsersById = (req, res) => {
@@ -33,13 +36,13 @@ module.exports.getUsersById = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        res.status(404).send({message: "Пользователь по указанному _id не найден."})
+        res.status(NOT_FOUND_ERROR).send({message: "Пользователь по указанному _id не найден."})
       }
 
       if (err.name === "CastError") {
-        res.status(400).send({message: "Передан некорректный _id."})
+        res.status(BAD_REQUES_ERROR).send({message: "Передан некорректный _id."})
       }
-        return res.status(500).send({ message: 'Произошла ошибка' })
+        return res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' })
 
     } );
 };
@@ -50,9 +53,9 @@ module.exports.createUser = (req, res) => {
     .then(user => res.send({ data: user }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(400).send({message: "Переданы некорректные данные при создании пользователя."})
+        res.status(BAD_REQUES_ERROR).send({message: "Переданы некорректные данные при создании пользователя."})
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' })
+        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' })
       }
     });
 };
