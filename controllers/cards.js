@@ -24,8 +24,23 @@ module.exports.getCard = (req, res) => {
 
 module.exports.deleteCardById = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
+  .orFail(() => {
+    const newError = new Error()
+    newError.name = "DocumentNotFoundError"
+    throw newError
+  })
     .then(card => res.send(card))
-    .catch(() => res.status(404).send({ message: "Карточка с указанным _id не найдена." }));
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        res.status(404).send({message: "карточка по указанному _id не найдена."})
+      }
+
+      if (err.name === "CastError") {
+        res.status(400).send({message: "Передан некорректный _id."})
+      }
+        return res.status(500).send({ message: 'Произошла ошибка' })
+
+    } );
 };
 
 module.exports.likeCard = (req, res) =>
