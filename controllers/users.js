@@ -5,29 +5,15 @@ const BAD_REQUES_ERROR = 400;
 const DEFAULT_ERROR = 500;
 
 const updateUser = (req, res) => {
-  const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+  const { name, about, avatar } = req.body;
+  // eslint-disable-next-line max-len
+  User.findByIdAndUpdate(req.user._id, { name, about, avatar }, { new: true, runValidators: true })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь по указанному _id не найден.' });
       } else if (err.name === 'ValidationError') {
         res.status(BAD_REQUES_ERROR).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
-      } else {
-        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' });
-      }
-    });
-};
-
-const updateAvatar = (req, res) => {
-  const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь по указанному _id не найден.' });
-      } else if (err.name === 'ValidationError') {
-        res.status(BAD_REQUES_ERROR).send({ message: 'Переданы некорректные данные при обновлении аватара.' });
       } else {
         res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' });
       }
@@ -74,10 +60,10 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateUserInfo = (req, res) => {
   const { name, about } = req.body;
-  updateUser(req.user._id, { name, about });
+  updateUser(req, res, { name, about });
 };
 
 module.exports.updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
-  updateAvatar(req.user._id, { avatar });
+  updateUser(req, res, { avatar });
 };
