@@ -4,14 +4,12 @@ const NOT_FOUND_ERROR = 404;
 const BAD_REQUES_ERROR = 400;
 const DEFAULT_ERROR = 500;
 
-const updateUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  // eslint-disable-next-line max-len
-  User.findByIdAndUpdate(req.user._id, { name, about, avatar }, { new: true, runValidators: true })
-    .then((user) => res.send({ data: user }))
+const updateUser = (req, res, data) => {
+  User.findByIdAndUpdate(req.user._id, data, { new: true, runValidators: true })
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь по указанному _id не найден.' });
+        res.status(BAD_REQUES_ERROR).send({ message: 'Пользователь по указанному _id не найден.' });
       } else if (err.name === 'ValidationError') {
         res.status(BAD_REQUES_ERROR).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
       } else {
