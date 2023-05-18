@@ -3,12 +3,11 @@ const bcrypt = require('bcryptjs');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
 
-const NOT_FOUND_ERROR = 404;
 const BAD_REQUES_ERROR = 400;
-const DEFAULT_ERROR = 500;
 
-const updateUser = (req, res, data) => {
+const updateUser = (req, res, next, data) => {
   User.findByIdAndUpdate(req.user._id, data, { new: true, runValidators: true })
     .then((user) => res.send(user))
     .catch((err) => {
@@ -17,37 +16,39 @@ const updateUser = (req, res, data) => {
       } else if (err.name === 'ValidationError') {
         res.status(BAD_REQUES_ERROR).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
       } else {
-        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' });
+        next(err);
       }
     });
 };
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' }));
+    .catch((err) => next(err));
 };
 
-module.exports.getUsersById = (req, res) => {
-  User.findById(req.params.userId)
-    .orFail(() => {
-      const newError = new Error();
-      newError.name = 'DocumentNotFoundError';
-      throw newError;
+module.exports.getUsersById = (req, res, next) => {
+  const userId = req.params.userId ? req.params.userId : req.user._id;
+  User.findById(userId)
+    .orFail()
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError(
+          'Пользователь по указанному id не найден.',
+        );
+      }
+      return res.send(user);
     })
-    .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь по указанному _id не найден.' });
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         res.status(BAD_REQUES_ERROR).send({ message: 'Передан некорректный _id.' });
       } else {
-        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' });
+        next(err);
       }
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -60,7 +61,7 @@ module.exports.createUser = (req, res) => {
       if (err.name === 'ValidationError') {
         res.status(BAD_REQUES_ERROR).send({ message: 'Переданы некорректные данные при создании пользователя.' });
       } else {
-        res.status(DEFAULT_ERROR).send({ message: 'Произошла ошибка' });
+        next(err);
       }
     });
 };
