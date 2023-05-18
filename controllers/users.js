@@ -42,7 +42,6 @@ module.exports.getUsersById = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequesError('Не корректные данные Id.'));
-        return;
       } next(err);
     });
 };
@@ -57,7 +56,7 @@ module.exports.createUser = (req, res, next) => {
     }))
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         next(new BadRequesError('Переданы некорректные данные при создании пользователя.'));
       } else {
         next(err);
