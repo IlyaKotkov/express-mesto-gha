@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
+const BadRequesError = require('../errors/BadRequesError');
 
 const BAD_REQUES_ERROR = 400;
 
@@ -33,18 +34,16 @@ module.exports.getUsersById = (req, res, next) => {
     .orFail()
     .then((user) => {
       if (!user) {
-        throw new NotFoundError(
-          'Пользователь по указанному id не найден.',
-        );
+        throw new NotFoundError('Пользователь не найден');
       }
-      return res.send(user);
+      res.send(user);
     })
+    // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(BAD_REQUES_ERROR).send({ message: 'Передан некорректный _id.' });
-      } else {
-        next(err);
-      }
+        next(new BadRequesError('Не корректные данные Id.'));
+        return;
+      } next(err);
     });
 };
 
@@ -56,10 +55,10 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash, // записываем хеш в базу
     }))
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(BAD_REQUES_ERROR).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+      if (err.name === 'CastError') {
+        next(new BadRequesError('Переданы некорректные данные при создании пользователя.'));
       } else {
         next(err);
       }
