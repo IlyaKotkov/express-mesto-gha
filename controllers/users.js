@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const bcrypt = require('bcryptjs');
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -6,19 +7,19 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequesError = require('../errors/BadRequesError');
 
-const BAD_REQUES_ERROR = 400;
-
 const updateUser = (req, res, next, data) => {
   User.findByIdAndUpdate(req.user._id, data, { new: true, runValidators: true })
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(BAD_REQUES_ERROR).send({ message: 'Пользователь по указанному _id не найден.' });
-      } else if (err.name === 'ValidationError') {
-        res.status(BAD_REQUES_ERROR).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
-      } else {
-        next(err);
+    .then((user) => {
+      if (!user) {
+        return next(new NotFoundError('Пользователь не найден'));
       }
+      res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'BadRequesError') {
+        next(new BadRequesError('Переданы некорректные данные при обновлении профиля.'));
+      }
+      next(err);
     });
 };
 
@@ -31,18 +32,20 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.getUsersById = (req, res, next) => {
   const userId = req.params.userId ? req.params.userId : req.user._id;
   User.findById(userId)
-    .orFail()
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Пользователь не найден');
-      }
-      res.send(user);
+    .orFail(() => {
+      const newError = new Error();
+      newError.name = 'DocumentNotFoundError';
+      throw newError;
     })
-    // eslint-disable-next-line consistent-return
+    .then((user) => { res.send(user); })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequesError('Не корректные данные Id.'));
-      } next(err);
+      if (err.name === 'DocumentNotFoundError') {
+        next(new NotFoundError('пользователь не найден'));
+      } else if (err.name === 'CastError') {
+        next(new BadRequesError('передан некорректный id'));
+      } else {
+        next(err);
+      }
     });
 };
 
