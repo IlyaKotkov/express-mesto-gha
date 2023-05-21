@@ -1,8 +1,7 @@
 const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
+const BadRequesError = require('../errors/BadRequesError');
 
-const NOT_FOUND_ERROR = 404;
-const BAD_REQUES_ERROR = 400;
 const STATUS_OK = 200;
 
 module.exports.createCard = (req, res, next) => {
@@ -11,11 +10,10 @@ module.exports.createCard = (req, res, next) => {
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(BAD_REQUES_ERROR).send({ message: 'Переданы некорректные данные при создании карточки.' });
-      } else {
-        next(err);
+      if (err.name === 'BadRequesError') {
+        next(new BadRequesError('Переданы некорректные данные при создании карточки.'));
       }
+      next(err);
     });
 };
 
@@ -35,9 +33,9 @@ module.exports.deleteCardById = (req, res, next) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        res.status(NOT_FOUND_ERROR).send({ message: 'карточка по указанному _id не найдена.' });
+        next(new NotFoundError('Карточка по указанному _id не найдена.'));
       } else if (err.name === 'CastError') {
-        res.status(BAD_REQUES_ERROR).send({ message: 'Передан некорректный _id.' });
+        next(new BadRequesError('Передан некорректный _id.'));
       } else {
         next(err);
       }
@@ -51,13 +49,13 @@ module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
 )
   .then((card) => {
     if (!card) {
-      res.status(NOT_FOUND_ERROR).send({ message: 'Карточка с указанным _id не найдена.' });
+      next(new NotFoundError('Карточка с указанным _id не найдена.'));
     }
-    return res.status(200).send({ data: card });
+    return res.status(STATUS_OK).send({ data: card });
   })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(BAD_REQUES_ERROR).send({ message: 'Переданы некорректные данные для постановки лайка.' });
+      next(new BadRequesError('Переданы некорректные данные для постановки лайка.'));
     } else {
       next(err);
     }
@@ -70,13 +68,13 @@ module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
 )
   .then((card) => {
     if (!card) {
-      res.status(NOT_FOUND_ERROR).send({ message: 'Карточка с указанным _id не найдена.' });
+      next(new NotFoundError('Карточка с указанным _id не найдена.'));
     }
     return res.status(STATUS_OK).send({ data: card });
   })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(BAD_REQUES_ERROR).send({ message: 'Переданы некорректные данные для снятии лайка.' });
+      next(new BadRequesError('Переданы некорректные данные для постановки лайка.'));
     } else {
       next(err);
     }
