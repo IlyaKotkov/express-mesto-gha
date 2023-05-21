@@ -17,7 +17,7 @@ const updateUser = (req, res, data, next) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'BadRequesError') {
+      if (err.name === 'CastError') {
         next(new BadRequesError('Переданы некорректные данные при обновлении профиля.'));
       }
       next(err);
