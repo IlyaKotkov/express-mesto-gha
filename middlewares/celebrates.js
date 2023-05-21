@@ -14,7 +14,7 @@ module.exports.login = celebrate({
 });
 module.exports.getUsersId = celebrate({
   params: Joi.object().keys({
-    userId: Joi.objectId(),
+    userId: Joi.string().hex().length(24),
   }),
 });
 module.exports.createCard = celebrate({
@@ -36,6 +36,6 @@ module.exports.updateUser = celebrate({
 });
 module.exports.checkIdCard = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.objectId(),
+    cardId: Joi.string().hex().length(24),
   }),
 });
