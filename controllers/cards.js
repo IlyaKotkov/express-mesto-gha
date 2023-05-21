@@ -35,7 +35,7 @@ module.exports.deleteCardById = (req, res, next) => {
       if (card.owner !== req.user._id) {
         throw new ForbiddenError('Недостаточно прав для этого действия');
       }
-      return res.send(card);
+      res.send(card);
     })
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
