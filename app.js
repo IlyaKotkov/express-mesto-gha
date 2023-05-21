@@ -36,11 +36,14 @@ app.use(errors());
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
-  if (!err.statusCode) {
-    res.status(500).send({ message: err.message });
-  }
-  res.status(err.statusCode).send({ message: err.message });
-  next();
+  const { status = 500, message } = err;
+
+  res.status(status).send({
+    // проверяем статус и выставляем сообщение в зависимости от него
+    message: status === 500
+      ? 'На сервере произошла ошибка'
+      : message,
+  });
 });
 
 app.listen(3000);

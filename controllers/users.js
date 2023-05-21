@@ -6,15 +6,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequesError = require('../errors/BadRequesError');
-const existingEmail = require('../errors/existingEmail');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 const updateUser = (req, res, data, next) => {
   User.findByIdAndUpdate(req.user._id, data, { new: true, runValidators: true })
-    .orFail(() => {
-      const newError = new Error();
-      newError.name = 'DocumentNotFoundError';
-      throw newError;
-    })
     .then((user) => {
       if (!user) {
         throw new NotFoundError(
@@ -25,9 +20,7 @@ const updateUser = (req, res, data, next) => {
       return res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        next(new NotFoundError('Пользователь по указанному id не найден.'));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequesError('Переданы некорректные данные при обновлении профиля.'));
       } else {
         next(err);
@@ -44,16 +37,15 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.getUsersById = (req, res, next) => {
   const userId = req.params.userId ? req.params.userId : req.user._id;
   User.findById(userId)
-    .orFail(() => {
-      const newError = new Error();
-      newError.name = 'DocumentNotFoundError';
-      throw newError;
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('пользователь не найден');
+      }
+
+      res.send(user);
     })
-    .then((user) => { res.send(user); })
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        next(new NotFoundError('пользователь не найден'));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequesError('передан некорректный id'));
       } else {
         next(err);
@@ -71,11 +63,10 @@ module.exports.createUser = (req, res, next) => {
     }))
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.code === 11000) {
+        next(new ForbiddenError('Такой Email уже существует.'));
+      } else if (err.name === 'ValidationError') {
         next(new BadRequesError('Переданы некорректные данные при создании пользователя.'));
-      } else if (err.code === 11000) {
-        // eslint-disable-next-line new-cap
-        next(new existingEmail('Такой Email уже существует.'));
       } else {
         next(err);
       }

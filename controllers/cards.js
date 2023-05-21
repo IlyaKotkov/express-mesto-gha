@@ -1,7 +1,7 @@
 const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequesError = require('../errors/BadRequesError');
-const ForbiddenError = require('../errors/ForbiddenError');
+const ConflictError = require('../errors/ConflictError');
 
 const STATUS_OK = 200;
 
@@ -31,7 +31,7 @@ module.exports.deleteCardById = (req, res, next) => {
         throw new NotFoundError('Карточка с указанным _id не найдена.');
       }
       if (card.owner.toString() !== req.user._id) {
-        throw new ForbiddenError('Недостаточно прав для этого действия');
+        throw new ConflictError('Недостаточно прав для этого действия');
       }
 
       return Card.findByIdAndRemove(req.params.cardId);
@@ -53,7 +53,7 @@ module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
 )
   .then((card) => {
     if (!card) {
-      next(new NotFoundError('Карточка с указанным _id не найдена.'));
+      throw new NotFoundError('Карточка с указанным _id не найдена.');
     }
     return res.status(STATUS_OK).send({ data: card });
   })
