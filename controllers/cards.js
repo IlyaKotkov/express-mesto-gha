@@ -34,7 +34,7 @@ module.exports.deleteCardById = (req, res, next) => {
       if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Недостаточно прав для этого действия');
       }
-      return Card.findByIdAndRemove(req.params._id);
+      return Card.findByIdAndRemove(req.params.cardId);
     })
     .then((deletedCard) => res.send(deletedCard))
     .catch((err) => {
