@@ -25,23 +25,20 @@ module.exports.getCard = (req, res, next) => {
 };
 
 module.exports.deleteCardById = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .orFail(() => {
-      const newError = new Error();
-      newError.name = 'DocumentNotFoundError';
-      throw newError;
-    })
+  Card.findById(req.params.cardId)
     .then((card) => {
+      if (!card) {
+        throw new NotFoundError('Карточка с указанным _id не найдена.');
+      }
       if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Недостаточно прав для этого действия');
       }
 
-      return res.send(card);
+      return Card.findByIdAndRemove(req.params.cardId);
     })
+    .then((deletedCard) => res.send(deletedCard))
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        next(new NotFoundError('Карточка по указанному _id не найдена.'));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequesError('Передан некорректный _id.'));
       } else {
         next(err);
@@ -73,17 +70,15 @@ module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
   { $pull: { likes: req.user._id } },
   { new: true },
 )
-  .orFail(() => {
-    const newError = new Error();
-    newError.name = 'DocumentNotFoundError';
-    throw newError;
+  .then((card) => {
+    if (!card) {
+      throw new NotFoundError('Карточка с указанным _id не найдена.');
+    }
+    res.status(STATUS_OK).send({ data: card });
   })
-  .then((card) => { res.status(STATUS_OK).send({ data: card }); })
   .catch((err) => {
-    if (err.status === 'DocumentNotFoundError') {
-      next(new NotFoundError('Карточка с указанным _id не найдена.'));
-    } else if (err.name === 'CastError') {
-      next(new BadRequesError('Переданы некорректные данные для постановки лайка.'));
+    if (err.name === 'CastError') {
+      next(new BadRequesError('Переданы некорректные данные для снятии лайка.'));
     } else {
       next(err);
     }
