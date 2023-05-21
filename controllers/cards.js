@@ -32,10 +32,11 @@ module.exports.deleteCardById = (req, res, next) => {
       throw newError;
     })
     .then((card) => {
-      if (card.owner !== req.user._id) {
+      if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Недостаточно прав для этого действия');
       }
-      res.send(card);
+
+      return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
