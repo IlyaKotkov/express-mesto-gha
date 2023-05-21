@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequesError = require('../errors/BadRequesError');
+const existingEmail = require('../errors/existingEmail');
 
 const updateUser = (req, res, data, next) => {
   User.findByIdAndUpdate(req.user._id, data, { new: true, runValidators: true })
@@ -61,6 +62,9 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequesError('Переданы некорректные данные при создании пользователя.'));
+      } else if (err.code === 11000) {
+        // eslint-disable-next-line new-cap
+        next(new existingEmail('Такой Email уже существует.'));
       } else {
         next(err);
       }

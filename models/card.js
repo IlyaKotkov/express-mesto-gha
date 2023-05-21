@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { regexLink } = require('../middlewares/celebrates');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -10,6 +11,10 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator: (avatar) => regexLink.test(avatar),
+      message: 'Некорректная ссылка на картинку',
+    },
   },
   owner: {
     type: mongoose.SchemaTypes.ObjectId,
