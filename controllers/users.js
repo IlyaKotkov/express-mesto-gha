@@ -10,17 +10,28 @@ const existingEmail = require('../errors/existingEmail');
 
 const updateUser = (req, res, data, next) => {
   User.findByIdAndUpdate(req.user._id, data, { new: true, runValidators: true })
+    .orFail(() => {
+      const newError = new Error();
+      newError.name = 'DocumentNotFoundError';
+      throw newError;
+    })
     .then((user) => {
       if (!user) {
-        return next(new NotFoundError('Пользователь не найден'));
+        throw new NotFoundError(
+          'Пользователь по указанному id не найден.',
+        );
       }
-      res.send(user);
+
+      return res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'DocumentNotFoundError') {
+        next(new NotFoundError('Пользователь по указанному id не найден.'));
+      } else if (err.name === 'CastError') {
         next(new BadRequesError('Переданы некорректные данные при обновлении профиля.'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
