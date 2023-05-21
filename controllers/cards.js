@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequesError = require('../errors/BadRequesError');
@@ -33,8 +34,7 @@ module.exports.deleteCardById = (req, res, next) => {
       if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Недостаточно прав для этого действия');
       }
-
-      return Card.findByIdAndRemove(req.params.cardId);
+      return Card.findByIdAndRemove(req.params._id);
     })
     .then((deletedCard) => res.send(deletedCard))
     .catch((err) => {
