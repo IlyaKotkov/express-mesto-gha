@@ -10,10 +10,11 @@ module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.status(201).send(card))
+    // eslint-disable-next-line consistent-return
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequesError('Переданы некорректные данные при создании карточки.'));
+      if (err.name === 'ValidationError') {
+        return next(new BadRequesError('Переданы некорректные данные при создании карточки.'));
       }
       next(err);
     });
@@ -21,7 +22,7 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.getCard = (req, res, next) => {
   Card.find({})
-    .then((cards) => res.send({ data: cards }))
+    .then((cards) => res.send(cards))
     .catch((err) => next(err));
 };
 
@@ -55,7 +56,7 @@ module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
     if (!card) {
       throw new NotFoundError('Карточка с указанным _id не найдена.');
     }
-    return res.status(STATUS_OK).send({ data: card });
+    return res.status(STATUS_OK).send(card);
   })
   .catch((err) => {
     if (err.name === 'CastError') {
@@ -74,7 +75,7 @@ module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
     if (!card) {
       throw new NotFoundError('Карточка с указанным _id не найдена.');
     }
-    res.status(STATUS_OK).send({ data: card });
+    res.status(STATUS_OK).send(card);
   })
   .catch((err) => {
     if (err.name === 'CastError') {

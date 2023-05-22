@@ -4,6 +4,7 @@ const auth = require('../middlewares/auth');
 const {
   getCard, createCard, deleteCardById, likeCard, dislikeCard,
 } = require('../controllers/cards');
+const { regexLink } = require('../utils/constants');
 
 router.get('/cards', auth, getCard);
 router.delete('/cards/:cardId', celebrate({
@@ -14,7 +15,7 @@ router.delete('/cards/:cardId', celebrate({
 router.post('/cards', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().pattern(/(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-/]))?/),
+    link: Joi.string().required().regex(regexLink),
   }),
 }), auth, createCard);
 router.put('/cards/:cardId/likes', celebrate({

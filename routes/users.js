@@ -4,6 +4,7 @@ const auth = require('../middlewares/auth');
 const {
   getUsers, getUsersById, updateUserInfo, updateUserAvatar,
 } = require('../controllers/users');
+const { regexLink } = require('../utils/constants');
 
 router.get('/users', auth, getUsers);
 router.get('/users/me', auth, getUsersById);
@@ -20,7 +21,7 @@ router.patch('/users/me', celebrate({
 }), auth, updateUserInfo);
 router.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().pattern(/(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-/]))?/),
+    avatar: Joi.string().required().regex(regexLink),
   }),
 }), auth, updateUserAvatar);
 
